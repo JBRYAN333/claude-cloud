@@ -17,13 +17,12 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Replicar a configuração do seu PC para o Claude-Cloud
-# Trocamos o localhost pelo seu 9router da Web
-export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/v1"
-export ANTHROPIC_API_KEY="sk_9router"
-export CLAUDE_CODE_MODEL="Meu_Claude_PRO"
+# 3. Configurações EXATAS do 9router Web (conforme openclaw.json)
+export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
+export ANTHROPIC_API_KEY="clawsec_ninja_2026"
+export CLAUDE_CODE_MODEL="protagnix"
 
-echo "Iniciando Claude-Cloud (Meu_Claude_PRO) via 9router Web..."
+echo "Iniciando Claude-Cloud (protagnix) via 9router Web..."
 echo "Acesse via: https://claude-cloud-ryan.squareweb.app"
 
 # 4. Iniciar o ttyd servindo o Claude Code
