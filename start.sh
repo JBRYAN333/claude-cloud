@@ -17,18 +17,17 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento (Padrão 9router Cloud)
-export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
-export ANTHROPIC_API_KEY="clawsec_ninja_2026"
+# 3. Configuração de Roteamento (Espelhada do PC Local)
+export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
+export ANTHROPIC_API_KEY="sk_9router"
 
-# Limpar variáveis de modelo para deixar o Claude pedir o padrão (Opus)
-# O 9router deve estar configurado para mapear 'claude-3-opus-20240229' ou similar
-# para o seu combo protagnix.
-unset CLAUDE_CODE_MODEL
-unset ANTHROPIC_MODEL
+# Forçar o modelo que o roteador web retornou na lista
+# e que o Claude Code aceita (usando o ID oficial do Opus 4)
+export CLAUDE_CODE_MODEL="claude-3-opus-20240229"
+export ANTHROPIC_MODEL="claude-3-opus-20240229"
 
-echo "Iniciando Claude-Cloud com chave oficial e modelo padrão..."
-echo "Conectado a: https://protagrouter.squareweb.app"
+echo "Iniciando Claude-Cloud com configuração LOCAL..."
+echo "Se estiver na nuvem, este endereço (localhost) precisa estar acessível!"
 
-# 4. Iniciar o ttyd sem forçar modelo via flag
-./bin/ttyd -p $PORT ./node_modules/.bin/claude --dangerously-skip-permissions
+# 4. Iniciar o ttyd (comando limpo)
+./bin/ttyd -p $PORT ./node_modules/.bin/claude --model claude-3-opus-20240229 --dangerously-skip-permissions
