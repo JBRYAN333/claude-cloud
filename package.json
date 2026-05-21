@@ -1,0 +1,12 @@
+{
+  "name": "claude-cloud",
+  "version": "1.0.0",
+  "description": "Claude Code 24/7 na SquareCloud com ttyd e 9router",
+  "main": "index.js",
+  "scripts": {
+    "start": "bash start.sh"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "latest"
+  }
+}
