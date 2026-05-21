@@ -21,12 +21,12 @@ fi
 export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
 export ANTHROPIC_API_KEY="clawsec_ninja_2026"
 
-# A CHAVE DO SUCESSO: Forçar o Claude Code a pedir o seu combo específico.
-# Assim o 9router não se perde procurando por nomes oficiais da Anthropic.
+# Forçar o modelo em todas as variáveis possíveis
 export CLAUDE_CODE_MODEL="protagnix"
+export ANTHROPIC_MODEL="protagnix"
 
 echo "Iniciando Claude-Cloud forçando modelo 'protagnix' via 9router Web..."
 echo "Conectado a: https://protagrouter.squareweb.app"
 
-# 4. Iniciar o ttyd servindo o Claude Code
-./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --dangerously-skip-permissions
+# 4. Iniciar o ttyd servindo o Claude Code com o flag --model
+./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --model protagnix --dangerously-skip-permissions
