@@ -17,17 +17,18 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento (Ajuste Final para SquareCloud)
+# 3. Configuração de Roteamento (Padrão 9router Cloud)
 export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
-export ANTHROPIC_API_KEY="sk_9router"
+export ANTHROPIC_API_KEY="clawsec_ninja_2026"
 
-# Máscara de modelo oficial para o Claude Code não travar internamente.
-# O 9router receberá a requisição e entregará o combo protagnix associado à chave.
-export CLAUDE_CODE_MODEL="claude-3-5-sonnet-20241022"
-export ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
+# Limpar variáveis de modelo para deixar o Claude pedir o padrão (Opus)
+# O 9router deve estar configurado para mapear 'claude-3-opus-20240229' ou similar
+# para o seu combo protagnix.
+unset CLAUDE_CODE_MODEL
+unset ANTHROPIC_MODEL
 
-echo "Iniciando Claude-Cloud (9router Web + sk_9router)..."
-echo "Usando máscara Sonnet para compatibilidade interna."
+echo "Iniciando Claude-Cloud com chave oficial e modelo padrão..."
+echo "Conectado a: https://protagrouter.squareweb.app"
 
-# 4. Iniciar o ttyd (comando simplificado e corrigido)
-./bin/ttyd -p $PORT ./node_modules/.bin/claude --model claude-3-5-sonnet-20241022 --dangerously-skip-permissions
+# 4. Iniciar o ttyd sem forçar modelo via flag
+./bin/ttyd -p $PORT ./node_modules/.bin/claude --dangerously-skip-permissions
