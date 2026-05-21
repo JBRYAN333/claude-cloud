@@ -17,17 +17,16 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento para o Combo PROTAGNIX
-export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
+# 3. Configuração de Roteamento EXATA da Local (Espelhada)
+export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
 export ANTHROPIC_API_KEY="sk_9router"
 
-# Deixar o Claude Code escolher o modelo padrão (Opus),
-# mas o 9router vai interceptar e usar o combo protagnix configurado na chave.
+# Resetar qualquer trava de modelo para deixar o roteador decidir
 unset CLAUDE_CODE_MODEL
 unset ANTHROPIC_MODEL
 
-echo "Iniciando Claude-Cloud com configuração espelhada da Local (sk_9router)..."
-echo "Conectado a: https://protagrouter.squareweb.app"
+echo "Iniciando Claude-Cloud com a configuração IDÊNTICA ao PC Local..."
+echo "Conectado a: http://localhost:20128 (Requer túnel para o PC Local)"
 
 # 4. Iniciar o ttyd servindo o Claude Code sem forçar modelo via flag
 ./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --dangerously-skip-permissions
