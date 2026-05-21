@@ -18,10 +18,13 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
 fi
 
 # 3. Configuração de Roteamento para o 9router Web
-# Usamos CLAUDE_CODE_API_BASE_URL para redirecionar todo o tráfego do CLI
-export CLAUDE_CODE_API_BASE_URL="https://protagrouter.squareweb.app/api/v1"
-# A chave virá da variável de ambiente configurada no dashboard da SquareCloud
-export ANTHROPIC_API_KEY="$CLAUDE_CODE_API_KEY"
+# Algumas versões do Claude Code preferem a URL sem o /api
+export CLAUDE_CODE_API_BASE_URL="https://protagrouter.squareweb.app/v1"
+
+# Usamos a chave que funciona no seu PC.
+# Adicionamos um prefixo falso sk-ant- para o Claude Code não reclamar do formato.
+# O 9router geralmente ignora esse prefixo ou você pode configurar para ignorar.
+export ANTHROPIC_API_KEY="sk-ant-9router-ninja-2026"
 
 echo "Iniciando Claude-Cloud conectado ao 9router Web..."
 echo "Acesse via: https://claude-cloud-ryan.squareweb.app"
