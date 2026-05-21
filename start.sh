@@ -17,17 +17,18 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento (Espelhada do PC Local)
-export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
+# 3. Configuração de Roteamento (Ponte Web -> PC Local)
+# Usamos a URL pública para que a SquareCloud consiga chegar no seu roteador.
+export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
 export ANTHROPIC_API_KEY="sk_9router"
 
-# Forçar o modelo que o roteador web retornou na lista
-# e que o Claude Code aceita (usando o ID oficial do Opus 4)
-export CLAUDE_CODE_MODEL="claude-3-opus-20240229"
-export ANTHROPIC_MODEL="claude-3-opus-20240229"
+# Usamos o ID que o roteador enviou na lista de modelos 'anthropic/...'
+# para o Claude Code não achar que o modelo não existe.
+export CLAUDE_CODE_MODEL="anthropic/claude-3-5-sonnet-20241022"
+export ANTHROPIC_MODEL="anthropic/claude-3-5-sonnet-20241022"
 
-echo "Iniciando Claude-Cloud com configuração LOCAL..."
-echo "Se estiver na nuvem, este endereço (localhost) precisa estar acessível!"
+echo "Iniciando Claude-Cloud via Ponte Web..."
+echo "Conectado a: https://protagrouter.squareweb.app"
 
-# 4. Iniciar o ttyd (comando limpo)
-./bin/ttyd -p $PORT ./node_modules/.bin/claude --model claude-3-opus-20240229 --dangerously-skip-permissions
+# 4. Iniciar o ttyd
+./bin/ttyd -p $PORT ./node_modules/.bin/claude --model anthropic/claude-3-5-sonnet-20241022 --dangerously-skip-permissions
