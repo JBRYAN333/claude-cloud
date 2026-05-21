@@ -1,11 +1,12 @@
 FROM node:20-slim
 
-# Instalar ttyd e dependências de rede
+# Instalar ttyd e dependências de rede (socat adicionado para o túnel localhost)
 RUN apt-get update && apt-get install -y \
     ttyd \
     git \
     curl \
     ca-certificates \
+    socat \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
