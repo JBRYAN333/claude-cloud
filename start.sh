@@ -21,12 +21,13 @@ fi
 export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
 export ANTHROPIC_API_KEY="clawsec_ninja_2026"
 
-# Forçar o modelo em todas as variáveis possíveis
-export CLAUDE_CODE_MODEL="protagnix"
-export ANTHROPIC_MODEL="protagnix"
+# Enganar o Claude Code para ele aceitar o modelo, mas o 9router vai processar.
+# Usamos um ID que o Claude Code reconhece internamente.
+export CLAUDE_CODE_MODEL="claude-3-5-sonnet-20241022"
+export ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
 
-echo "Iniciando Claude-Cloud forçando modelo 'protagnix' via 9router Web..."
+echo "Iniciando Claude-Cloud usando máscara de Sonnet para o 9router..."
 echo "Conectado a: https://protagrouter.squareweb.app"
 
-# 4. Iniciar o ttyd servindo o Claude Code com o flag --model
-./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --model protagnix --dangerously-skip-permissions
+# 4. Iniciar o ttyd servindo o Claude Code
+./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --model claude-3-5-sonnet-20241022 --dangerously-skip-permissions
