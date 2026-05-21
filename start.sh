@@ -17,26 +17,17 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento EXATA da Local com Túnel Interno
-export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
+# 3. Configuração de Roteamento (Ajuste Final para SquareCloud)
+export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
 export ANTHROPIC_API_KEY="sk_9router"
 
-# TRUQUE DE MESTRE: Redirecionar localhost:20128 para o 9router Web
-# Isso engana o Claude Code fazendo-o pensar que está no PC local.
-# Instalamos o socat se necessário (via apt no Docker ou manual)
-if command -v socat > /dev/null; then
-    socat TCP4-LISTEN:20128,fork,reuseaddr TCP4:protagrouter.squareweb.app:443 &
-else
-    echo "Socat não encontrado, tentando baixar versão estática..."
-    # Se não tiver socat, a gente usa a URL direta como fallback seguro para não quebrar
-    export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
-fi
+# Máscara de modelo oficial para o Claude Code não travar internamente.
+# O 9router receberá a requisição e entregará o combo protagnix associado à chave.
+export CLAUDE_CODE_MODEL="claude-3-5-sonnet-20241022"
+export ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
 
-unset CLAUDE_CODE_MODEL
-unset ANTHROPIC_MODEL
+echo "Iniciando Claude-Cloud (9router Web + sk_9router)..."
+echo "Usando máscara Sonnet para compatibilidade interna."
 
-echo "Iniciando Claude-Cloud com Mimetismo Local..."
-echo "Simulando localhost:20128 -> protagrouter.squareweb.app"
-
-# 4. Iniciar o ttyd servindo o Claude Code (corrigido flag -W para permissão de escrita)
-./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --dangerously-skip-permissions
+# 4. Iniciar o ttyd (comando simplificado e corrigido)
+./bin/ttyd -p $PORT ./node_modules/.bin/claude --model claude-3-5-sonnet-20241022 --dangerously-skip-permissions
