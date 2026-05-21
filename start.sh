@@ -19,15 +19,15 @@ fi
 
 # 3. Configuração de Roteamento para o Combo PROTAGNIX
 export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
-export ANTHROPIC_API_KEY="clawsec_ninja_2026"
+export ANTHROPIC_API_KEY="sk_9router"
 
-# Enganar o Claude Code para ele aceitar o modelo, mas o 9router vai processar.
-# Usamos um ID que o Claude Code reconhece internamente.
-export CLAUDE_CODE_MODEL="claude-3-5-sonnet-20241022"
-export ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
+# Deixar o Claude Code escolher o modelo padrão (Opus),
+# mas o 9router vai interceptar e usar o combo protagnix configurado na chave.
+unset CLAUDE_CODE_MODEL
+unset ANTHROPIC_MODEL
 
-echo "Iniciando Claude-Cloud usando máscara de Sonnet para o 9router..."
+echo "Iniciando Claude-Cloud com configuração espelhada da Local (sk_9router)..."
 echo "Conectado a: https://protagrouter.squareweb.app"
 
-# 4. Iniciar o ttyd servindo o Claude Code
-./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --model claude-3-5-sonnet-20241022 --dangerously-skip-permissions
+# 4. Iniciar o ttyd servindo o Claude Code sem forçar modelo via flag
+./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --dangerously-skip-permissions
