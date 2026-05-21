@@ -4,7 +4,7 @@
 mkdir -p ./bin
 export PATH=$PATH:$(pwd)/bin
 
-# 1. Baixar o ttyd se não existir (Versão 1.7.3 estável)
+# 1. Baixar o ttyd se não existir
 if [ ! -f "./bin/ttyd" ]; then
     echo "Baixando ttyd..."
     curl -L https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 -o ./bin/ttyd
@@ -17,19 +17,17 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento para o 9router Web
-# Algumas versões do Claude Code preferem a URL sem o /api
-export CLAUDE_CODE_API_BASE_URL="https://protagrouter.squareweb.app/v1"
+# 3. Configuração Espelhada do OpenClaw Web (conforme openclaw.json)
+# Usamos as mesmas variáveis que funcionam no seu PC, mas apontando para o site.
+export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
+export ANTHROPIC_API_KEY="clawsec_ninja_2026"
 
-# Usamos a chave que funciona no seu PC.
-# Adicionamos um prefixo falso sk-ant- para o Claude Code não reclamar do formato.
-# O 9router geralmente ignora esse prefixo ou você pode configurar para ignorar.
-export ANTHROPIC_API_KEY="sk-ant-9router-ninja-2026"
+# Forçamos o Claude Code a não usar o modo de conta Pro, usando o provedor direto.
+export CLAUDE_CODE_USE_KEY_AUTH=true
 
-echo "Iniciando Claude-Cloud conectado ao 9router Web..."
-echo "Acesse via: https://claude-cloud-ryan.squareweb.app"
+echo "Iniciando Claude-Cloud (Meu_Claude_PRO) via 9router Web..."
+echo "Configuração: https://protagrouter.squareweb.app/api/v1"
 
 # 4. Iniciar o ttyd servindo o Claude Code
-# -p $PORT: Porta da SquareCloud
-# -W: Escrever no terminal (ttyd 1.7.3 usa -W)
+# -W: Permite escrever (ttyd 1.7.3)
 ./bin/ttyd -p $PORT -W ./node_modules/.bin/claude --dangerously-skip-permissions
