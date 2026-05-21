@@ -20,7 +20,8 @@ fi
 # 3. Configuração de Roteamento para o 9router Web
 # Usamos CLAUDE_CODE_API_BASE_URL para redirecionar todo o tráfego do CLI
 export CLAUDE_CODE_API_BASE_URL="https://protagrouter.squareweb.app/api/v1"
-export ANTHROPIC_API_KEY="clawsec_ninja_2026"
+# A chave virá da variável de ambiente configurada no dashboard da SquareCloud
+export ANTHROPIC_API_KEY="$CLAUDE_CODE_API_KEY"
 
 echo "Iniciando Claude-Cloud conectado ao 9router Web..."
 echo "Acesse via: https://claude-cloud-ryan.squareweb.app"
