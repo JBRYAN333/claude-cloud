@@ -1,5 +1,5 @@
 DISPLAY_NAME=Claude-Cloud
-MAIN=Dockerfile
+MAIN=index.js
 MEMORY=1024
 VERSION=recommended
 SUBDOMAIN=claude-cloud-ryan
