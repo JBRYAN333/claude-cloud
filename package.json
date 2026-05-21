@@ -4,7 +4,8 @@
   "description": "Claude Code 24/7 na SquareCloud com ttyd e 9router",
   "main": "index.js",
   "scripts": {
-    "start": "bash start.sh"
+    "start": "bash start.sh",
+    "build": "apt-get update && apt-get install -y ttyd"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "latest"
