@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Criar pasta para binários se não existir
 mkdir -p ./bin
 export PATH=$PATH:$(pwd)/bin
@@ -17,18 +16,12 @@ if [ ! -f "./node_modules/.bin/claude" ]; then
     npm install @anthropic-ai/claude-code
 fi
 
-# 3. Configuração de Roteamento (Ponte Web -> PC Local)
-# Usamos a URL pública para que a SquareCloud consiga chegar no seu roteador.
-export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/api/v1"
+# 3. Configuração
+export ANTHROPIC_BASE_URL="https://protagrouter.squareweb.app/v1"
 export ANTHROPIC_API_KEY="sk_9router"
 
-# Usamos o ID que o roteador enviou na lista de modelos 'anthropic/...'
-# para o Claude Code não achar que o modelo não existe.
-export CLAUDE_CODE_MODEL="anthropic/claude-3-5-sonnet-20241022"
-export ANTHROPIC_MODEL="anthropic/claude-3-5-sonnet-20241022"
-
-echo "Iniciando Claude-Cloud via Ponte Web..."
+echo "Iniciando Claude-Cloud..."
 echo "Conectado a: https://protagrouter.squareweb.app"
 
 # 4. Iniciar o ttyd
-./bin/ttyd -p $PORT ./node_modules/.bin/claude --model anthropic/claude-3-5-sonnet-20241022 --dangerously-skip-permissions
+./bin/ttyd -p $PORT ./node_modules/.bin/claude --model protagnix --dangerously-skip-permissions
