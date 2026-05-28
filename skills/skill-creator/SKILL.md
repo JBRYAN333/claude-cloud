@@ -1,212 +1,212 @@
 ---
 name: skill-creator
-description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+description: Crie novas habilidades, modifique e aprimore habilidades existentes, e meça o desempenho das habilidades. Use quando os usuários desejam criar uma habilidade do zero, editar ou otimizar uma habilidade existente, executar avaliações para testar uma habilidade, comparar o desempenho da habilidade com análise de variância ou otimizar a descrição de uma habilidade para maior precisão de acionamento.
 ---
 
-# Skill Creator
+# Criador de Habilidades
 
-A skill for creating new skills and iteratively improving them.
+Uma habilidade para criar novas habilidades e aprimorá-las iterativamente.
 
-At a high level, the process of creating a skill goes like this:
+Em um nível alto, o processo de criação de uma habilidade funciona assim:
 
-- Decide what you want the skill to do and roughly how it should do it
-- Write a draft of the skill
-- Create a few test prompts and run claude-with-access-to-the-skill on them
-- Help the user evaluate the results both qualitatively and quantitatively
-  - While the runs happen in the background, draft some quantitative evals if there aren't any (if there are some, you can either use as is or modify if you feel something needs to change about them). Then explain them to the user (or if they already existed, explain the ones that already exist)
-  - Use the `eval-viewer/generate_review.py` script to show the user the results for them to look at, and also let them look at the quantitative metrics
-- Rewrite the skill based on feedback from the user's evaluation of the results (and also if there are any glaring flaws that become apparent from the quantitative benchmarks)
-- Repeat until you're satisfied
-- Expand the test set and try again at larger scale
+-   Decida o que você quer que a habilidade faça e, aproximadamente, como ela deve fazer
+-   Escreva um rascunho da habilidade
+-   Crie alguns prompts de teste e execute o Claude com acesso à habilidade neles
+-   Ajude o usuário a avaliar os resultados de forma qualitativa e quantitativa
+    -   Enquanto as execuções acontecem em segundo plano, rascunhe algumas avaliações quantitativas se não houver nenhuma (se houver, você pode usá-las como estão ou modificá-las se sentir que algo precisa mudar). Em seguida, explique-as ao usuário (ou se já existiam, explique as que já existem)
+    -   Use o script `eval-viewer/generate_review.py` para mostrar os resultados ao usuário para que ele os examine, e também deixe-o ver as métricas quantitativas
+-   Reescreva a habilidade com base no feedback da avaliação dos resultados pelo usuário (e também se houver falhas evidentes que se tornem aparentes a partir dos benchmarks quantitativos)
+-   Repita até ficar satisfeito
+-   Expanda o conjunto de testes e tente novamente em maior escala
 
-Your job when using this skill is to figure out where the user is in this process and then jump in and help them progress through these stages. So for instance, maybe they're like "I want to make a skill for X". You can help narrow down what they mean, write a draft, write the test cases, figure out how they want to evaluate, run all the prompts, and repeat.
+Seu trabalho ao usar esta habilidade é descobrir onde o usuário está neste processo e, em seguida, intervir e ajudá-lo a progredir por essas etapas. Por exemplo, talvez eles digam "Eu quero criar uma habilidade para X". Você pode ajudar a refinar o que eles querem dizer, escrever um rascunho, escrever os casos de teste, descobrir como eles querem avaliar, executar todos os prompts e repetir.
 
-On the other hand, maybe they already have a draft of the skill. In this case you can go straight to the eval/iterate part of the loop.
+Por outro lado, talvez eles já tenham um rascunho da habilidade. Neste caso, você pode ir direto para a parte de avaliação/iteração do loop.
 
-Of course, you should always be flexible and if the user is like "I don't need to run a bunch of evaluations, just vibe with me", you can do that instead.
+Claro, você deve ser sempre flexível e, se o usuário disser "Não preciso fazer um monte de avaliações, apenas me ajude", você pode fazer isso.
 
-Then after the skill is done (but again, the order is flexible), you can also run the skill description improver, which we have a whole separate script for, to optimize the triggering of the skill.
+Então, depois que a habilidade estiver pronta (mas, novamente, a ordem é flexível), você também pode executar o aprimorador de descrição da habilidade, para o qual temos um script separado, a fim de otimizar o acionamento da habilidade.
 
-Cool? Cool.
+Legal? Legal.
 
-## Communicating with the user
+## Comunicação com o usuário
 
-The skill creator is liable to be used by people across a wide range of familiarity with coding jargon. If you haven't heard (and how could you, it's only very recently that it started), there's a trend now where the power of Claude is inspiring plumbers to open up their terminals, parents and grandparents to google "how to install npm". On the other hand, the bulk of users are probably fairly computer-literate.
+O criador de habilidades é propenso a ser usado por pessoas com uma ampla gama de familiaridade com o jargão de codificação. Se você não ouviu (e como poderia, é só muito recentemente que começou), há uma tendência agora onde o poder do Claude está inspirando encanadores a abrir seus terminais, pais e avós a procurar "como instalar npm". Por outro lado, a maioria dos usuários provavelmente é bastante familiarizada com computadores.
 
-So please pay attention to context cues to understand how to phrase your communication! In the default case, just to give you some idea:
+Portanto, preste atenção às pistas de contexto para entender como deve formular sua comunicação! No caso padrão, apenas para lhe dar uma ideia:
 
-- "evaluation" and "benchmark" are borderline, but OK
-- for "JSON" and "assertion" you want to see serious cues from the user that they know what those things are before using them without explaining them
+-   "avaliação" e "benchmark" são limítrofes, mas OK
+-   para "JSON" e "asserção", você deve ver pistas sérias do usuário de que ele sabe o que são essas coisas antes de usá-las sem explicá-las
 
-It's OK to briefly explain terms if you're in doubt, and feel free to clarify terms with a short definition if you're unsure if the user will get it.
+É OK explicar brevemente os termos se você estiver em dúvida, e sinta-se à vontade para esclarecer os termos com uma breve definição se não tiver certeza se o usuário vai entender.
 
 ---
 
-## Creating a skill
+## Criando uma habilidade
 
-### Capture Intent
+### Capture a Intenção
 
-Start by understanding the user's intent. The current conversation might already contain a workflow the user wants to capture (e.g., they say "turn this into a skill"). If so, extract answers from the conversation history first — the tools used, the sequence of steps, corrections the user made, input/output formats observed. The user may need to fill the gaps, and should confirm before proceeding to the next step.
+Comece entendendo a intenção do usuário. A conversa atual pode já conter um fluxo de trabalho que o usuário deseja capturar (por exemplo, ele diz "transforme isso em uma habilidade"). Se for o caso, extraia as respostas do histórico da conversa primeiro — as ferramentas usadas, a sequência de etapas, as correções que o usuário fez, os formatos de entrada/saída observados. O usuário pode precisar preencher as lacunas e deve confirmar antes de prosseguir para a próxima etapa.
 
-1. What should this skill enable Claude to do?
-2. When should this skill trigger? (what user phrases/contexts)
-3. What's the expected output format?
-4. Should we set up test cases to verify the skill works? Skills with objectively verifiable outputs (file transforms, data extraction, code generation, fixed workflow steps) benefit from test cases. Skills with subjective outputs (writing style, art) often don't need them. Suggest the appropriate default based on the skill type, but let the user decide.
+1.  O que esta habilidade deve permitir que o Claude faça?
+2.  Quando esta habilidade deve ser acionada? (quais frases/contextos do usuário)
+3.  Qual é o formato de saída esperado?
+4.  Devemos configurar casos de teste para verificar se a habilidade funciona? Habilidades com saídas objetivamente verificáveis (transformações de arquivos, extração de dados, geração de código, etapas de fluxo de trabalho fixas) se beneficiam de casos de teste. Habilidades com saídas subjetivas (estilo de escrita, arte) geralmente não precisam. Sugira o padrão apropriado com base no tipo de habilidade, mas deixe o usuário decidir.
 
-### Interview and Research
+### Entrevista e Pesquisa
 
-Proactively ask questions about edge cases, input/output formats, example files, success criteria, and dependencies. Wait to write test prompts until you've got this part ironed out.
+Faça proativamente perguntas sobre casos extremos, formatos de entrada/saída, arquivos de exemplo, critérios de sucesso e dependências. Espere para escrever os prompts de teste até que você tenha essa parte resolvida.
 
-Check available MCPs - if useful for research (searching docs, finding similar skills, looking up best practices), research in parallel via subagents if available, otherwise inline. Come prepared with context to reduce burden on the user.
+Verifique os MCPs disponíveis - se úteis para pesquisa (pesquisar documentos, encontrar habilidades semelhantes, procurar as melhores práticas), pesquise em paralelo via subagentes, se disponíveis, caso contrário, em linha. Venha preparado com o contexto para reduzir a carga sobre o usuário.
 
-### Write the SKILL.md
+### Escreva o SKILL.md
 
-Based on the user interview, fill in these components:
+Com base na entrevista com o usuário, preencha estes componentes:
 
-- **name**: Skill identifier
-- **description**: When to trigger, what it does. This is the primary triggering mechanism - include both what the skill does AND specific contexts for when to use it. All "when to use" info goes here, not in the body. Note: currently Claude has a tendency to "undertrigger" skills -- to not use them when they'd be useful. To combat this, please make the skill descriptions a little bit "pushy". So for instance, instead of "How to build a simple fast dashboard to display internal Anthropic data.", you might write "How to build a simple fast dashboard to display internal Anthropic data. Make sure to use this skill whenever the user mentions dashboards, data visualization, internal metrics, or wants to display any kind of company data, even if they don't explicitly ask for a 'dashboard.'"
-- **compatibility**: Required tools, dependencies (optional, rarely needed)
-- **the rest of the skill :)**
+-   **name**: Identificador da habilidade
+-   **description**: Quando acionar, o que faz. Este é o principal mecanismo de acionamento - inclua tanto o que a habilidade faz QUANTO contextos específicos para quando usá-la. Todas as informações "quando usar" vão aqui, não no corpo. Nota: atualmente, o Claude tem uma tendência a "subacionar" habilidades - a não usá-las quando seriam úteis. Para combater isso, torne as descrições das habilidades um pouco "agressivas". Por exemplo, em vez de "Como construir um painel simples e rápido para exibir dados internos da Anthropic.", você pode escrever "Como construir um painel simples e rápido para exibir dados internos da Anthropic. Certifique-se de usar esta habilidade sempre que o usuário mencionar painéis, visualização de dados, métricas internas ou quiser exibir qualquer tipo de dados da empresa, mesmo que não peça explicitamente por um 'painel'."
+-   **compatibility**: Ferramentas necessárias, dependências (opcional, raramente necessário)
+-   **o resto da habilidade :)**
 
-### Skill Writing Guide
+### Guia de Escrita de Habilidades
 
-#### Anatomy of a Skill
+#### Anatomia de uma Habilidade
 
 ```
-skill-name/
-├── SKILL.md (required)
-│   ├── YAML frontmatter (name, description required)
-│   └── Markdown instructions
-└── Bundled Resources (optional)
-    ├── scripts/    - Executable code for deterministic/repetitive tasks
-    ├── references/ - Docs loaded into context as needed
-    └── assets/     - Files used in output (templates, icons, fonts)
+nome-da-habilidade/
+├── SKILL.md (obrigatório)
+│   ├── YAML frontmatter (nome, descrição obrigatórios)
+│   └── Instruções Markdown
+└── Recursos Agrupados (opcional)
+    ├── scripts/    - Código executável para tarefas determinísticas/repetitivas
+    ├── references/ - Documentos carregados no contexto conforme necessário
+    └── assets/     - Arquivos usados na saída (modelos, ícones, fontes)
 ```
 
-#### Progressive Disclosure
+#### Divulgação Progressiva
 
-Skills use a three-level loading system:
-1. **Metadata** (name + description) - Always in context (~100 words)
-2. **SKILL.md body** - In context whenever skill triggers (<500 lines ideal)
-3. **Bundled resources** - As needed (unlimited, scripts can execute without loading)
+As habilidades usam um sistema de carregamento de três níveis:
+1.  **Metadados** (nome + descrição) - Sempre em contexto (~100 palavras)
+2.  **Corpo do SKILL.md** - Em contexto sempre que a habilidade é acionada (idealmente <500 linhas)
+3.  **Recursos agrupados** - Conforme necessário (ilimitado, scripts podem ser executados sem carregamento)
 
-These word counts are approximate and you can feel free to go longer if needed.
+Essas contagens de palavras são aproximadas e você pode estender se necessário.
 
-**Key patterns:**
-- Keep SKILL.md under 500 lines; if you're approaching this limit, add an additional layer of hierarchy along with clear pointers about where the model using the skill should go next to follow up.
-- Reference files clearly from SKILL.md with guidance on when to read them
-- For large reference files (>300 lines), include a table of contents
+**Padrões chave:**
+-   Mantenha o SKILL.md com menos de 500 linhas; se você estiver se aproximando desse limite, adicione uma camada adicional de hierarquia junto com ponteiros claros sobre onde o modelo que usa a habilidade deve ir em seguida para dar seguimento.
+-   Referencie arquivos claramente do SKILL.md com orientação sobre quando lê-los
+-   Para arquivos de referência grandes (>300 linhas), inclua um índice
 
-**Domain organization**: When a skill supports multiple domains/frameworks, organize by variant:
+**Organização por domínio**: Quando uma habilidade suporta vários domínios/frameworks, organize por variante:
 ```
-cloud-deploy/
-├── SKILL.md (workflow + selection)
+implantar-na-nuvem/
+├── SKILL.md (fluxo de trabalho + seleção)
 └── references/
     ├── aws.md
     ├── gcp.md
     └── azure.md
 ```
-Claude reads only the relevant reference file.
+Claude lê apenas o arquivo de referência relevante.
 
-#### Principle of Lack of Surprise
+#### Princípio da Ausência de Surpresa
 
-This goes without saying, but skills must not contain malware, exploit code, or any content that could compromise system security. A skill's contents should not surprise the user in their intent if described. Don't go along with requests to create misleading skills or skills designed to facilitate unauthorized access, data exfiltration, or other malicious activities. Things like a "roleplay as an XYZ" are OK though.
+Isso nem precisa ser dito, mas as habilidades não devem conter malware, código de exploração ou qualquer conteúdo que possa comprometer a segurança do sistema. O conteúdo de uma habilidade não deve surpreender o usuário em sua intenção se descrito. Não concorde com solicitações para criar habilidades enganosas ou habilidades projetadas para facilitar acesso não autorizado, exfiltração de dados ou outras atividades maliciosas. Coisas como um "roleplay como um XYZ" são OK.
 
-#### Writing Patterns
+#### Padrões de Escrita
 
-Prefer using the imperative form in instructions.
+Prefira usar a forma imperativa nas instruções.
 
-**Defining output formats** - You can do it like this:
+**Definindo formatos de saída** - Você pode fazer assim:
 ```markdown
-## Report structure
-ALWAYS use this exact template:
-# [Title]
-## Executive summary
-## Key findings
-## Recommendations
+## Estrutura do relatório
+SEMPRE use este modelo exato:
+# [Título]
+## Resumo executivo
+## Principais descobertas
+## Recomendações
 ```
 
-**Examples pattern** - It's useful to include examples. You can format them like this (but if "Input" and "Output" are in the examples you might want to deviate a little):
+**Padrão de exemplos** - É útil incluir exemplos. Você pode formatá-los assim (mas se "Entrada" e "Saída" estiverem nos exemplos, talvez você queira desviar um pouco):
 ```markdown
-## Commit message format
-**Example 1:**
-Input: Added user authentication with JWT tokens
-Output: feat(auth): implement JWT-based authentication
+## Formato da mensagem de commit
+**Exemplo 1:**
+Entrada: Adicionada autenticação de usuário com tokens JWT
+Saída: feat(auth): implementar autenticação baseada em JWT
 ```
 
-### Writing Style
+### Estilo de Escrita
 
-Try to explain to the model why things are important in lieu of heavy-handed musty MUSTs. Use theory of mind and try to make the skill general and not super-narrow to specific examples. Start by writing a draft and then look at it with fresh eyes and improve it.
+Tente explicar ao modelo por que as coisas são importantes em vez de "DEVE"s pesados e rígidos. Use a teoria da mente e tente tornar a habilidade geral e não super-restrita a exemplos específicos. Comece escrevendo um rascunho e, em seguida, olhe para ele com novos olhos e melhore-o. Faça o seu melhor para entrar na cabeça do usuário e entender o que ele quer e precisa.
 
-### Test Cases
+### Casos de Teste
 
-After writing the skill draft, come up with 2-3 realistic test prompts — the kind of thing a real user would actually say. Share them with the user: [you don't have to use this exact language] "Here are a few test cases I'd like to try. Do these look right, or do you want to add more?" Then run them.
+Depois de escrever o rascunho da habilidade, crie 2-3 prompts de teste realistas - o tipo de coisa que um usuário real realmente diria. Compartilhe-os com o usuário: [você não precisa usar esta linguagem exata] "Aqui estão alguns casos de teste que eu gostaria de experimentar. Eles parecem corretos, ou você gostaria de adicionar mais?" Em seguida, execute-os.
 
-Save test cases to `evals/evals.json`. Don't write assertions yet — just the prompts. You'll draft assertions in the next step while the runs are in progress.
+Salve os casos de teste em `evals/evals.json`. Não escreva as asserções ainda - apenas os prompts. Você rascunhará as asserções na próxima etapa enquanto as execuções estiverem em andamento.
 
 ```json
 {
-  "skill_name": "example-skill",
+  "skill_name": "habilidade-exemplo",
   "evals": [
     {
       "id": 1,
-      "prompt": "User's task prompt",
-      "expected_output": "Description of expected result",
+      "prompt": "Prompt da tarefa do usuário",
+      "expected_output": "Descrição do resultado esperado",
       "files": []
     }
   ]
 }
 ```
 
-See `references/schemas.md` for the full schema (including the `assertions` field, which you'll add later).
+Veja `references/schemas.md` para o esquema completo (incluindo o campo `assertions`, que você adicionará mais tarde).
 
-## Running and evaluating test cases
+## Executando e avaliando casos de teste
 
-This section is one continuous sequence — don't stop partway through. Do NOT use `/skill-test` or any other testing skill.
+Esta seção é uma sequência contínua - não pare no meio. NÃO use `/skill-test` ou qualquer outra habilidade de teste.
 
-Put results in `<skill-name>-workspace/` as a sibling to the skill directory. Within the workspace, organize results by iteration (`iteration-1/`, `iteration-2/`, etc.) and within that, each test case gets a directory (`eval-0/`, `eval-1/`, etc.). Don't create all of this upfront — just create directories as you go.
+Coloque os resultados em `<nome-da-habilidade>-workspace/` como um irmão do diretório da habilidade. Dentro do workspace, organize os resultados por iteração (`iteracao-1/`, `iteracao-2/`, etc.) e, dentro disso, cada caso de teste obtém um diretório (`aval-0/`, `aval-1/`, etc.). Não crie tudo isso de uma vez - apenas crie diretórios à medida que avança.
 
-### Step 1: Spawn all runs (with-skill AND baseline) in the same turn
+### Passo 1: Inicie todas as execuções (com-habilidade E linha de base) na mesma vez
 
-For each test case, spawn two subagents in the same turn — one with the skill, one without. This is important: don't spawn the with-skill runs first and then come back for baselines later. Launch everything at once so it all finishes around the same time.
+Para cada caso de teste, inicie dois subagentes na mesma vez - um com a habilidade, outro sem. Isso é importante: não inicie as execuções com a habilidade primeiro e depois volte para as linhas de base mais tarde. Inicie tudo de uma vez para que tudo termine aproximadamente ao mesmo tempo.
 
-**With-skill run:**
+**Execução com a habilidade:**
 
 ```
-Execute this task:
-- Skill path: <path-to-skill>
-- Task: <eval prompt>
-- Input files: <eval files if any, or "none">
-- Save outputs to: <workspace>/iteration-<N>/eval-<ID>/with_skill/outputs/
-- Outputs to save: <what the user cares about — e.g., "the .docx file", "the final CSV">
+Execute esta tarefa:
+- Caminho da habilidade: <caminho-para-habilidade>
+- Tarefa: <prompt de avaliação>
+- Arquivos de entrada: <arquivos de avaliação, se houver, ou "nenhum">
+- Salvar saídas em: <workspace>/iteracao-<N>/aval-<ID>/com_habilidade/outputs/
+- Saídas a serem salvas: <o que o usuário se importa - por exemplo, "o arquivo .docx", "o CSV final">
 ```
 
-**Baseline run** (same prompt, but the baseline depends on context):
-- **Creating a new skill**: no skill at all. Same prompt, no skill path, save to `without_skill/outputs/`.
-- **Improving an existing skill**: the old version. Before editing, snapshot the skill (`cp -r <skill-path> <workspace>/skill-snapshot/`), then point the baseline subagent at the snapshot. Save to `old_skill/outputs/`.
+**Execução de linha de base** (mesmo prompt, mas a linha de base depende do contexto):
+-   **Criando uma nova habilidade**: nenhuma habilidade. Mesmo prompt, sem caminho da habilidade, salve em `sem_habilidade/outputs/`.
+-   **Melhorando uma habilidade existente**: a versão antiga. Antes de editar, faça um snapshot da habilidade (`cp -r <caminho-da-habilidade> <workspace>/skill-snapshot/`), então aponte o subagente da linha de base para o snapshot. Salve em `habilidade_antiga/outputs/`.
 
-Write an `eval_metadata.json` for each test case (assertions can be empty for now). Give each eval a descriptive name based on what it's testing — not just "eval-0". Use this name for the directory too. If this iteration uses new or modified eval prompts, create these files for each new eval directory — don't assume they carry over from previous iterations.
+Escreva um `eval_metadata.json` para cada caso de teste (as asserções podem estar vazias por enquanto). Dê a cada avaliação um nome descritivo com base no que está sendo testado - não apenas "aval-0". Use este nome também para o diretório. Se esta iteração usar prompts de avaliação novos ou modificados, crie esses arquivos para cada novo diretório de avaliação - não presuma que eles são transferidos de iterações anteriores.
 
 ```json
 {
   "eval_id": 0,
-  "eval_name": "descriptive-name-here",
-  "prompt": "The user's task prompt",
+  "eval_name": "nome-descritivo-aqui",
+  "prompt": "Prompt da tarefa do usuário",
   "assertions": []
 }
 ```
 
-### Step 2: While runs are in progress, draft assertions
+### Passo 2: Enquanto as execuções estão em andamento, rascunhe as asserções
 
-Don't just wait for the runs to finish — you can use this time productively. Draft quantitative assertions for each test case and explain them to the user. If assertions already exist in `evals/evals.json`, review them and explain what they check.
+Não espere apenas as execuções terminarem - você pode usar esse tempo de forma produtiva. Rascunhe asserções quantitativas para cada caso de teste e explique-as ao usuário. Se as asserções já existirem em `evals/evals.json`, revise-as e explique o que elas verificam.
 
-Good assertions are objectively verifiable and have descriptive names — they should read clearly in the benchmark viewer so someone glancing at the results immediately understands what each one checks. Subjective skills (writing style, design quality) are better evaluated qualitatively — don't force assertions onto things that need human judgment.
+Boas asserções são objetivamente verificáveis e têm nomes descritivos - elas devem ser lidas claramente no visualizador de benchmark para que alguém que examine os resultados entenda imediatamente o que cada uma verifica. Habilidades subjetivas (estilo de escrita, qualidade de design) são melhor avaliadas qualitativamente - não force asserções em coisas que precisam de julgamento humano.
 
-Update the `eval_metadata.json` files and `evals/evals.json` with the assertions once drafted. Also explain to the user what they'll see in the viewer — both the qualitative outputs and the quantitative benchmark.
+Atualize os arquivos `eval_metadata.json` e `evals/evals.json` com as asserções assim que rascunhadas. Também explique ao usuário o que ele verá no visualizador - tanto as saídas qualitativas quanto o benchmark quantitativo.
 
-### Step 3: As runs complete, capture timing data
+### Passo 3: Conforme as execuções são concluídas, capture os dados de tempo
 
-When each subagent task completes, you receive a notification containing `total_tokens` and `duration_ms`. Save this data immediately to `timing.json` in the run directory:
+Quando cada tarefa do subagente é concluída, você recebe uma notificação contendo `total_tokens` e `duration_ms`. Salve esses dados imediatamente em `timing.json` no diretório de execução:
 
 ```json
 {
@@ -216,72 +216,72 @@ When each subagent task completes, you receive a notification containing `total_
 }
 ```
 
-This is the only opportunity to capture this data — it comes through the task notification and isn't persisted elsewhere. Process each notification as it arrives rather than trying to batch them.
+Esta é a única oportunidade de capturar esses dados - eles chegam através da notificação da tarefa e não são persistidos em outro lugar. Processe cada notificação conforme ela chega, em vez de tentar agrupá-las.
 
-### Step 4: Grade, aggregate, and launch the viewer
+### Passo 4: Classifique, agregue e inicie o visualizador
 
-Once all runs are done:
+Uma vez que todas as execuções estejam concluídas:
 
-1. **Grade each run** — spawn a grader subagent (or grade inline) that reads `agents/grader.md` and evaluates each assertion against the outputs. Save results to `grading.json` in each run directory. The grading.json expectations array must use the fields `text`, `passed`, and `evidence` (not `name`/`met`/`details` or other variants) — the viewer depends on these exact field names. For assertions that can be checked programmatically, write and run a script rather than eyeballing it — scripts are faster, more reliable, and can be reused across iterations.
+1.  **Classifique cada execução** - inicie um subagente classificador (ou classifique em linha) que lê `agents/grader.md` e avalia cada asserção em relação às saídas. Salve os resultados em `grading.json` em cada diretório de execução. O array de expectativas em `grading.json` deve usar os campos `text`, `passed` e `evidence` (não `name`/`met`/`details` ou outras variantes) - o visualizador depende desses nomes de campo exatos. Para asserções que podem ser verificadas programaticamente, escreva e execute um script em vez de fazer uma verificação visual - scripts são mais rápidos, mais confiáveis e podem ser reutilizados em várias iterações.
 
-2. **Aggregate into benchmark** — run the aggregation script from the skill-creator directory:
-   ```bash
-   python -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <name>
-   ```
-   This produces `benchmark.json` and `benchmark.md` with pass_rate, time, and tokens for each configuration, with mean ± stddev and the delta. If generating benchmark.json manually, see `references/schemas.md` for the exact schema the viewer expects.
-Put each with_skill version before its baseline counterpart.
+2.  **Agregue em benchmark** - execute o script de agregação do diretório do criador de habilidades:
+    ```bash
+    python -m scripts.aggregate_benchmark <workspace>/iteracao-N --skill-name <nome>
+    ```
+    Isso produz `benchmark.json` e `benchmark.md` com a taxa de aprovação, tempo e tokens para cada configuração, com média ± desvio padrão e o delta. Se estiver gerando `benchmark.json` manualmente, veja `references/schemas.md` para o esquema exato que o visualizador espera.
+    Coloque cada versão `com_habilidade` antes de sua contraparte `linha_de_base`.
 
-3. **Do an analyst pass** — read the benchmark data and surface patterns the aggregate stats might hide. See `agents/analyzer.md` (the "Analyzing Benchmark Results" section) for what to look for — things like assertions that always pass regardless of skill (non-discriminating), high-variance evals (possibly flaky), and time/token tradeoffs.
+3.  **Faça uma análise** - leia os dados do benchmark e identifique padrões que as estatísticas agregadas podem esconder. Veja `agents/analyzer.md` (a seção "Analisando Resultados de Benchmark") para saber o que procurar - coisas como asserções que sempre passam independentemente da habilidade (não discriminatórias), avaliações de alta variância (possivelmente instáveis) e compensações de tempo/token.
 
-4. **Launch the viewer** with both qualitative outputs and quantitative data:
-   ```bash
-   nohup python <skill-creator-path>/eval-viewer/generate_review.py \
-     <workspace>/iteration-N \
-     --skill-name "my-skill" \
-     --benchmark <workspace>/iteration-N/benchmark.json \
-     > /dev/null 2>&1 &
-   VIEWER_PID=$!
-   ```
-   For iteration 2+, also pass `--previous-workspace <workspace>/iteration-<N-1>`.
+4.  **Inicie o visualizador** com as saídas qualitativas e os dados quantitativos:
+    ```bash
+    nohup python <caminho-do-criador-de-habilidades>/eval-viewer/generate_review.py \
+      <workspace>/iteracao-N \
+      --skill-name "minha-habilidade" \
+      --benchmark <workspace>/iteracao-N/benchmark.json \
+      > /dev/null 2>&1 &
+    VIEWER_PID=$!
+    ```
+    Para a iteração 2+, também passe `--previous-workspace <workspace>/iteracao-<N-1>`.
 
-   **Cowork / headless environments:** If `webbrowser.open()` is not available or the environment has no display, use `--static <output_path>` to write a standalone HTML file instead of starting a server. Feedback will be downloaded as a `feedback.json` file when the user clicks "Submit All Reviews". After download, copy `feedback.json` into the workspace directory for the next iteration to pick up.
+    **Ambientes de Cowork / sem tela:** Se `webbrowser.open()` não estiver disponível ou o ambiente não tiver tela, use `--static <output_path>` para escrever um arquivo HTML autônomo em vez de iniciar um servidor. O feedback será baixado como um arquivo `feedback.json` quando o usuário clicar em "Submit All Reviews". Após o download, copie `feedback.json` para o diretório do workspace para que a próxima iteração o use.
 
-Note: please use generate_review.py to create the viewer; there's no need to write custom HTML.
+    Nota: por favor, use `generate_review.py` para criar o visualizador; não há necessidade de escrever HTML personalizado.
 
-5. **Tell the user** something like: "I've opened the results in your browser. There are two tabs — 'Outputs' lets you click through each test case and leave feedback, 'Benchmark' shows the quantitative comparison. When you're done, come back here and let me know."
+5.  **Diga ao usuário** algo como: "Abri os resultados no seu navegador. Há duas abas - 'Saídas' permite que você clique em cada caso de teste e deixe feedback, 'Benchmark' mostra a comparação quantitativa. Quando terminar, volte aqui e me avise."
 
-### What the user sees in the viewer
+### O que o usuário vê no visualizador
 
-The "Outputs" tab shows one test case at a time:
-- **Prompt**: the task that was given
-- **Output**: the files the skill produced, rendered inline where possible
-- **Previous Output** (iteration 2+): collapsed section showing last iteration's output
-- **Formal Grades** (if grading was run): collapsed section showing assertion pass/fail
-- **Feedback**: a textbox that auto-saves as they type
-- **Previous Feedback** (iteration 2+): their comments from last time, shown below the textbox
+A aba "Saídas" mostra um caso de teste por vez:
+-   **Prompt**: a tarefa que foi dada
+-   **Saída**: os arquivos que a habilidade produziu, renderizados em linha quando possível
+-   **Saída Anterior** (iteração 2+): seção recolhida mostrando a saída da última iteração
+-   **Notas Formais** (se a classificação foi executada): seção recolhida mostrando aprovação/reprovação da asserção
+-   **Feedback**: uma caixa de texto que salva automaticamente conforme o usuário digita
+-   **Feedback Anterior** (iteração 2+): seus comentários da última vez, mostrados abaixo da caixa de texto
 
-The "Benchmark" tab shows the stats summary: pass rates, timing, and token usage for each configuration, with per-eval breakdowns and analyst observations.
+A aba "Benchmark" mostra o resumo das estatísticas: taxas de aprovação, tempo e uso de tokens para cada configuração, com detalhamentos por avaliação e observações do analista.
 
-Navigation is via prev/next buttons or arrow keys. When done, they click "Submit All Reviews" which saves all feedback to `feedback.json`.
+A navegação é feita pelos botões anterior/próximo ou pelas teclas de seta. Quando terminam, eles clicam em "Enviar Todas as Avaliações", o que salva todo o feedback em `feedback.json`.
 
-### Step 5: Read the feedback
+### Passo 5: Leia o feedback
 
-When the user tells you they're done, read `feedback.json`:
+Quando o usuário disser que terminou, leia `feedback.json`:
 
 ```json
 {
   "reviews": [
-    {"run_id": "eval-0-with_skill", "feedback": "the chart is missing axis labels", "timestamp": "..."},
-    {"run_id": "eval-1-with_skill", "feedback": "", "timestamp": "..."},
-    {"run_id": "eval-2-with_skill", "feedback": "perfect, love this", "timestamp": "..."}
+    {"run_id": "aval-0-com_habilidade", "feedback": "o gráfico está sem rótulos de eixo", "timestamp": "..."},
+    {"run_id": "aval-1-com_habilidade", "feedback": "", "timestamp": "..."},
+    {"run_id": "aval-2-com_habilidade", "feedback": "perfeito, adorei", "timestamp": "..."}
   ],
-  "status": "complete"
+  "status": "completo"
 }
 ```
 
-Empty feedback means the user thought it was fine. Focus your improvements on the test cases where the user had specific complaints.
+Feedback vazio significa que o usuário achou que estava tudo bem. Concentre suas melhorias nos casos de teste onde o usuário teve reclamações específicas.
 
-Kill the viewer server when you're done with it:
+Desligue o servidor do visualizador quando terminar de usá-lo:
 
 ```bash
 kill $VIEWER_PID 2>/dev/null
@@ -289,197 +289,197 @@ kill $VIEWER_PID 2>/dev/null
 
 ---
 
-## Improving the skill
+## Melhorando a habilidade
 
-This is the heart of the loop. You've run the test cases, the user has reviewed the results, and now you need to make the skill better based on their feedback.
+Este é o cerne do loop. Você executou os casos de teste, o usuário revisou os resultados e agora você precisa melhorar a habilidade com base no feedback dele.
 
-### How to think about improvements
+### Como pensar sobre melhorias
 
-1. **Generalize from the feedback.** The big picture thing that's happening here is that we're trying to create skills that can be used a million times (maybe literally, maybe even more who knows) across many different prompts. Here you and the user are iterating on only a few examples over and over again because it helps move faster. The user knows these examples in and out and it's quick for them to assess new outputs. But if the skill you and the user are codeveloping works only for those examples, it's useless. Rather than put in fiddly overfitty changes, or oppressively constrictive MUSTs, if there's some stubborn issue, you might try branching out and using different metaphors, or recommending different patterns of working. It's relatively cheap to try and maybe you'll land on something great.
+1.  **Generalize a partir do feedback.** O panorama geral aqui é que estamos tentando criar habilidades que podem ser usadas um milhão de vezes (talvez literalmente, talvez até mais, quem sabe) em muitos prompts diferentes. Aqui, você e o usuário estão iterando sobre apenas alguns exemplos repetidamente porque isso ajuda a acelerar. O usuário conhece esses exemplos de dentro para fora e é rápido para ele avaliar novas saídas. Mas se a habilidade que você e o usuário estão co-desenvolvendo funcionar apenas para esses exemplos, ela é inútil. Em vez de fazer mudanças excessivamente detalhistas, ou "DEVE"s opressivamente restritivos, se houver algum problema teimoso, você pode tentar ramificar e usar metáforas diferentes, ou recomendar diferentes padrões de trabalho. É relativamente barato tentar e talvez você encontre algo ótimo.
 
-2. **Keep the prompt lean.** Remove things that aren't pulling their weight. Make sure to read the transcripts, not just the final outputs — if it looks like the skill is making the model waste a bunch of time doing things that are unproductive, you can try getting rid of the parts of the skill that are making it do that and seeing what happens.
+2.  **Mantenha o prompt conciso.** Remova coisas que não estão agregando valor. Certifique-se de ler as transcrições, não apenas as saídas finais - se parece que a habilidade está fazendo o modelo perder muito tempo fazendo coisas improdutivas, você pode tentar se livrar das partes da habilidade que estão fazendo isso e ver o que acontece.
 
-3. **Explain the why.** Try hard to explain the **why** behind everything you're asking the model to do. Today's LLMs are *smart*. They have good theory of mind and when given a good harness can go beyond rote instructions and really make things happen. Even if the feedback from the user is terse or frustrated, try to actually understand the task and why the user is writing what they wrote, and what they actually wrote, and then transmit this understanding into the instructions. If you find yourself writing ALWAYS or NEVER in all caps, or using super rigid structures, that's a yellow flag — if possible, reframe and explain the reasoning so that the model understands why the thing you're asking for is important. That's a more humane, powerful, and effective approach.
+3.  **Explique o porquê.** Esforce-se para explicar o **porquê** por trás de tudo o que você está pedindo para o modelo fazer. Os LLMs de hoje são *inteligentes*. Eles têm uma boa teoria da mente e, quando recebem uma boa estrutura, podem ir além das instruções básicas e realmente fazer as coisas acontecerem. Mesmo que o feedback do usuário seja conciso ou frustrado, tente realmente entender a tarefa e por que o usuário está escrevendo o que escreveu, e o que ele realmente escreveu, e então transmita esse entendimento para as instruções. Se você se pegar escrevendo SEMPRE ou NUNCA em letras maiúsculas, ou usando estruturas super rígidas, isso é uma bandeela amarela - se possível, reformule e explique o raciocínio para que o modelo entenda por que o que você está pedindo é importante. Essa é uma abordagem mais humana, poderosa, e eficaz.
 
-4. **Look for repeated work across test cases.** Read the transcripts from the test runs and notice if the subagents all independently wrote similar helper scripts or took the same multi-step approach to something. If all 3 test cases resulted in the subagent writing a `create_docx.py` or a `build_chart.py`, that's a strong signal the skill should bundle that script. Write it once, put it in `scripts/`, and tell the skill to use it. This saves every future invocation from reinventing the wheel.
+4.  **Procure por trabalho repetido em casos de teste.** Leia as transcrições das execuções de teste e observe se todos os subagentes escreveram scripts auxiliares semelhantes de forma independente ou adotaram a mesma abordagem de várias etapas para algo. Se todos os 3 casos de teste resultaram no subagente escrevendo um `create_docx.py` ou um `build_chart.py`, isso é um forte sinal de que a habilidade deve agrupar esse script. Escreva-o uma vez, coloque-o em `scripts/` e diga à habilidade para usá-lo. Isso evita que cada invocação futura reinvente a roda.
 
-This task is pretty important (we are trying to create billions a year in economic value here!) and your thinking time is not the blocker; take your time and really mull things over. I'd suggest writing a draft revision and then looking at it anew and making improvements. Really do your best to get into the head of the user and understand what they want and need.
+Esta tarefa é bastante importante (estamos tentando criar bilhões de valor econômico por ano aqui!) e seu tempo de raciocínio não é o bloqueador; reserve um tempo e realmente reflita sobre as coisas. Eu sugiro escrever um rascunho da revisão e, em seguida, olhá-lo novamente e fazer melhorias. Realmente faça o seu melhor para se colocar no lugar do usuário e entender o que ele quer e precisa.
 
-### The iteration loop
+### O loop de iteração
 
-After improving the skill:
+Depois de melhorar a habilidade:
 
-1. Apply your improvements to the skill
-2. Rerun all test cases into a new `iteration-<N+1>/` directory, including baseline runs. If you're creating a new skill, the baseline is always `without_skill` (no skill) — that stays the same across iterations. If you're improving an existing skill, use your judgment on what makes sense as the baseline: the original version the user came in with, or the previous iteration.
-3. Launch the reviewer with `--previous-workspace` pointing at the previous iteration
-4. Wait for the user to review and tell you they're done
-5. Read the new feedback, improve again, repeat
+1.  Aplique suas melhorias à habilidade
+2.  Execute novamente todos os casos de teste em um novo diretório `iteracao-<N+1>/`, incluindo as execuções de linha de base. Se você estiver criando uma nova habilidade, a linha de base é sempre `sem_habilidade` (nenhuma habilidade) - isso permanece o mesmo em todas as iterações. Se você estiver melhorando uma habilidade existente, use seu julgamento sobre o que faz sentido como linha de base: a versão original com a qual o usuário chegou ou a iteração anterior.
+3.  Inicie o revisor com `--previous-workspace` apontando para a iteração anterior
+4.  Espere o usuário revisar e dizer que terminou
+5.  Leia o novo feedback, melhore novamente, repita
 
-Keep going until:
-- The user says they're happy
-- The feedback is all empty (everything looks good)
-- You're not making meaningful progress
-
----
-
-## Advanced: Blind comparison
-
-For situations where you want a more rigorous comparison between two versions of a skill (e.g., the user asks "is the new version actually better?"), there's a blind comparison system. Read `agents/comparator.md` and `agents/analyzer.md` for the details. The basic idea is: give two outputs to an independent agent without telling it which is which, and let it judge quality. Then analyze why the winner won.
-
-This is optional, requires subagents, and most users won't need it. The human review loop is usually sufficient.
+Continue até:
+-   O usuário diz que está satisfeito
+-   Todo o feedback está vazio (tudo parece bom)
+-   Você não está fazendo progresso significativo
 
 ---
 
-## Description Optimization
+## Avançado: Comparação cega
 
-The description field in SKILL.md frontmatter is the primary mechanism that determines whether Claude invokes a skill. After creating or improving a skill, offer to optimize the description for better triggering accuracy.
+Para situações em que você deseja uma comparação mais rigorosa entre duas versões de uma habilidade (por exemplo, o usuário pergunta "a nova versão é realmente melhor?"), existe um sistema de comparação cega. Leia `agents/comparator.md` e `agents/analyzer.md` para obter os detalhes. A ideia básica é: dar duas saídas a um agente independente sem dizer qual é qual, e deixá-lo julgar a qualidade. Em seguida, analise por que o vencedor venceu.
 
-### Step 1: Generate trigger eval queries
+Isso é opcional, requer subagentes, e a maioria dos usuários não precisará. O loop de revisão humana geralmente é suficiente.
 
-Create 20 eval queries — a mix of should-trigger and should-not-trigger. Save as JSON:
+---
+
+## Otimização da Descrição
+
+O campo de descrição no frontmatter do SKILL.md é o principal mecanismo que determina se o Claude invoca uma habilidade. Após criar ou aprimorar uma habilidade, ofereça otimizar a descrição para uma melhor precisão de acionamento.
+
+### Passo 1: Gerar consultas de avaliação de acionamento
+
+Crie 20 consultas de avaliação - uma mistura de "deve acionar" e "não deve acionar". Salve como JSON:
 
 ```json
 [
-  {"query": "the user prompt", "should_trigger": true},
-  {"query": "another prompt", "should_trigger": false}
+  {"query": "o prompt do usuário", "should_trigger": true},
+  {"query": "outro prompt", "should_trigger": false}
 ]
 ```
 
-The queries must be realistic and something a Claude Code or Claude.ai user would actually type. Not abstract requests, but requests that are concrete and specific and have a good amount of detail. For instance, file paths, personal context about the user's job or situation, column names and values, company names, URLs. A little bit of backstory. Some might be in lowercase or contain abbreviations or typos or casual speech. Use a mix of different lengths, and focus on edge cases rather than making them clear-cut (the user will get a chance to sign off on them).
+As consultas devem ser realistas e algo que um usuário do Claude Code ou Claude.ai realmente digitaria. Não solicitações abstratas, mas solicitações concretas e específicas e com uma boa quantidade de detalhes. Por exemplo, caminhos de arquivo, contexto pessoal sobre o trabalho ou situação do usuário, nomes e valores de colunas, nomes de empresas, URLs. Um pouco de história. Algumas podem estar em minúsculas ou conter abreviações ou erros de digitação ou fala casual. Use uma mistura de diferentes comprimentos e concentre-se em casos extremos, em vez de torná-los claros (o usuário terá a chance de aprová-los).
 
-Bad: `"Format this data"`, `"Extract text from PDF"`, `"Create a chart"`
+Ruim: `"Formate estes dados"`, `"Extraia texto de PDF"`, `"Crie um gráfico"`
 
-Good: `"ok so my boss just sent me this xlsx file (its in my downloads, called something like 'Q4 sales final FINAL v2.xlsx') and she wants me to add a column that shows the profit margin as a percentage. The revenue is in column C and costs are in column D i think"`
+Bom: `"ok, então meu chefe acabou de me enviar este arquivo xlsx (está nos meus downloads, chamado algo como 'vendas Q4 final FINAL v2.xlsx') e ele quer que eu adicione uma coluna que mostre a margem de lucro como uma porcentagem. A receita está na coluna C e os custos estão na coluna D, eu acho"`
 
-For the **should-trigger** queries (8-10), think about coverage. You want different phrasings of the same intent — some formal, some casual. Include cases where the user doesn't explicitly name the skill or file type but clearly needs it. Throw in some uncommon use cases and cases where this skill competes with another but should win.
+Para as consultas **deve-acionar** (8-10), pense na cobertura. Você quer diferentes frases da mesma intenção - algumas formais, algumas casuais. Inclua casos em que o usuário não nomeia explicitamente a habilidade ou o tipo de arquivo, mas claramente precisa dela. Inclua alguns casos de uso incomuns e casos em que esta habilidade compete com outra, mas deve vencer.
 
-For the **should-not-trigger** queries (8-10), the most valuable ones are the near-misses — queries that share keywords or concepts with the skill but actually need something different. Think adjacent domains, ambiguous phrasing where a naive keyword match would trigger but shouldn't, and cases where the query touches on something the skill does but in a context where another tool is more appropriate.
+Para as consultas **não-deve-acionar** (8-10), as mais valiosas são as "quase-perdas" - consultas que compartilham palavras-chave ou conceitos com a habilidade, mas na verdade precisam de algo diferente. Pense em domínios adjacentes, frases ambíguas onde uma correspondência de palavra-chave ingênua acionaria, mas não deveria, e casos em que a consulta aborda algo que a habilidade faz, mas em um contexto onde outra ferramenta é mais apropriada.
 
-The key thing to avoid: don't make should-not-trigger queries obviously irrelevant. "Write a fibonacci function" as a negative test for a PDF skill is too easy — it doesn't test anything. The negative cases should be genuinely tricky.
+A coisa fundamental a evitar: não torne as consultas não-deve-acionar obviamente irrelevantes. "Escreva uma função fibonacci" como um teste negativo para uma habilidade de PDF é muito fácil - não testa nada. Os casos negativos devem ser genuinamente complicados.
 
-### Step 2: Review with user
+### Passo 2: Revisar com o usuário
 
-Present the eval set to the user for review using the HTML template:
+Apresente o conjunto de avaliação ao usuário para revisão usando o modelo HTML:
 
-1. Read the template from `assets/eval_review.html`
-2. Replace the placeholders:
-   - `__EVAL_DATA_PLACEHOLDER__` → the JSON array of eval items (no quotes around it — it's a JS variable assignment)
-   - `__SKILL_NAME_PLACEHOLDER__` → the skill's name
-   - `__SKILL_DESCRIPTION_PLACEHOLDER__` → the skill's current description
-3. Write to a temp file (e.g., `/tmp/eval_review_<skill-name>.html`) and open it: `open /tmp/eval_review_<skill-name>.html`
-4. The user can edit queries, toggle should-trigger, add/remove entries, then click "Export Eval Set"
-5. The file downloads to `~/Downloads/eval_set.json` — check the Downloads folder for the most recent version in case there are multiple (e.g., `eval_set (1).json`)
+1.  Leia o modelo de `assets/eval_review.html`
+2.  Substitua os placeholders:
+    -   `__EVAL_DATA_PLACEHOLDER__` → o array JSON de itens de avaliação (sem aspas - é uma atribuição de variável JS)
+    -   `__SKILL_NAME_PLACEHOLDER__` → o nome da habilidade
+    -   `__SKILL_DESCRIPTION_PLACEHOLDER__` → a descrição atual da habilidade
+3.  Escreva em um arquivo temporário (por exemplo, `/tmp/eval_review_<nome-da-habilidade>.html`) e abra-o: `open /tmp/eval_review_<nome-da-habilidade>.html`
+4.  O usuário pode editar consultas, alternar `should-trigger`, adicionar/remover entradas, e então clicar em "Exportar Conjunto de Avaliação"
+5.  O arquivo é baixado para `~/Downloads/eval_set.json` - verifique a pasta Downloads para a versão mais recente, caso haja várias (por exemplo, `eval_set (1).json`)
 
-This step matters — bad eval queries lead to bad descriptions.
+Esta etapa é importante - consultas de avaliação ruins levam a descrições ruins.
 
-### Step 3: Run the optimization loop
+### Passo 3: Execute o loop de otimização
 
-Tell the user: "This will take some time — I'll run the optimization loop in the background and check on it periodically."
+Diga ao usuário: "Isso levará algum tempo - executarei o loop de otimização em segundo plano e verificarei periodicamente."
 
-Save the eval set to the workspace, then run in the background:
+Salve o conjunto de avaliação no workspace e, em seguida, execute em segundo plano:
 
 ```bash
 python -m scripts.run_loop \
-  --eval-set <path-to-trigger-eval.json> \
-  --skill-path <path-to-skill> \
-  --model <model-id-powering-this-session> \
+  --eval-set <caminho-para-trigger-eval.json> \
+  --skill-path <caminho-para-habilidade> \
+  --model <id-do-modelo-que-alimenta-esta-sessao> \
   --max-iterations 5 \
   --verbose
 ```
 
-Use the model ID from your system prompt (the one powering the current session) so the triggering test matches what the user actually experiences.
+Use o ID do modelo do seu prompt de sistema (aquele que alimenta a sessão atual) para que o teste de acionamento corresponda ao que o usuário realmente experimenta.
 
-While it runs, periodically tail the output to give the user updates on which iteration it's on and what the scores look like.
+Enquanto ele é executado, visualize periodicamente a saída para dar atualizações ao usuário sobre em qual iteração está e como estão as pontuações.
 
-This handles the full optimization loop automatically. It splits the eval set into 60% train and 40% held-out test, evaluates the current description (running each query 3 times to get a reliable trigger rate), then calls Claude to propose improvements based on what failed. It re-evaluates each new description on both train and test, iterating up to 5 times. When it's done, it opens an HTML report in the browser showing the results per iteration and returns JSON with `best_description` — selected by test score rather than train score to avoid overfitting.
+Isso lida com o loop de otimização completo automaticamente. Ele divide o conjunto de avaliação em 60% de treino e 40% de teste retido, avalia a descrição atual (executando cada consulta 3 vezes para obter uma taxa de acionamento confiável), e então chama o Claude para propor melhorias com base no que falhou. Ele reavalia cada nova descrição tanto no treino quanto no teste, iterando até 5 vezes. Quando termina, ele abre um relatório HTML no navegador mostrando os resultados por iteração e retorna JSON com `best_description` - selecionado pela pontuação do teste, em vez da pontuação do treino, para evitar overfitting.
 
-### How skill triggering works
+### Como funciona o acionamento de habilidades
 
-Understanding the triggering mechanism helps design better eval queries. Skills appear in Claude's `available_skills` list with their name + description, and Claude decides whether to consult a skill based on that description. The important thing to know is that Claude only consults skills for tasks it can't easily handle on its own — simple, one-step queries like "read this PDF" may not trigger a skill even if the description matches perfectly, because Claude can handle them directly with basic tools. Complex, multi-step, or specialized queries reliably trigger skills when the description matches.
+Entender o mecanismo de acionamento ajuda a projetar melhores consultas de avaliação. As habilidades aparecem na lista `available_skills` do Claude com seu nome + descrição, e o Claude decide se consulta uma habilidade com base nessa descrição. O importante a saber é que o Claude consulta as habilidades apenas para tarefas que ele não consegue lidar facilmente sozinho - consultas simples e de uma única etapa, como "ler este PDF", podem não acionar uma habilidade mesmo que a descrição corresponda perfeitamente, porque o Claude pode lidar com elas diretamente com ferramentas básicas. Consultas complexas, de várias etapas ou especializadas acionam habilidades de forma confiável quando a descrição corresponde.
 
-This means your eval queries should be substantive enough that Claude would actually benefit from consulting a skill. Simple queries like "read file X" are poor test cases — they won't trigger skills regardless of description quality.
+Isso significa que suas consultas de avaliação devem ser substanciais o suficiente para que o Claude realmente se beneficie da consulta a uma habilidade. Consultas simples como "ler arquivo X" são casos de teste ruins - elas não acionarão habilidades, independentemente da qualidade da descrição.
 
-### Step 4: Apply the result
+### Passo 4: Aplique o resultado
 
-Take `best_description` from the JSON output and update the skill's SKILL.md frontmatter. Show the user before/after and report the scores.
+Pegue `best_description` da saída JSON e atualize o frontmatter do SKILL.md da habilidade. Mostre ao usuário o antes/depois e relate as pontuações.
 
 ---
 
-### Package and Present (only if `present_files` tool is available)
+### Empacote e Apresente (somente se a ferramenta `present_files` estiver disponível)
 
-Check whether you have access to the `present_files` tool. If you don't, skip this step. If you do, package the skill and present the .skill file to the user:
+Verifique se você tem acesso à ferramenta `present_files`. Se não tiver, pule esta etapa. Se tiver, empacote a habilidade e apresente o arquivo `.skill` ao usuário:
 
 ```bash
-python -m scripts.package_skill <path/to/skill-folder>
+python -m scripts.package_skill <caminho/para/pasta-da-habilidade>
 ```
 
-After packaging, direct the user to the resulting `.skill` file path so they can install it.
+Após o empacotamento, direcione o usuário para o caminho do arquivo `.skill` resultante para que ele possa instalá-lo.
 
 ---
 
-## Claude.ai-specific instructions
+## Instruções específicas do Claude.ai
 
-In Claude.ai, the core workflow is the same (draft → test → review → improve → repeat), but because Claude.ai doesn't have subagents, some mechanics change. Here's what to adapt:
+No Claude.ai, o fluxo de trabalho principal é o mesmo (rascunho → teste → revisão → melhoria → repetição), mas como o Claude.ai não tem subagentes, algumas mecânicas mudam. Veja o que adaptar:
 
-**Running test cases**: No subagents means no parallel execution. For each test case, read the skill's SKILL.md, then follow its instructions to accomplish the test prompt yourself. Do them one at a time. This is less rigorous than independent subagents (you wrote the skill and you're also running it, so you have full context), but it's a useful sanity check — and the human review step compensates. Skip the baseline runs — just use the skill to complete the task as requested.
+**Executando casos de teste**: Nenhum subagente significa nenhuma execução paralela. Para cada caso de teste, leia o SKILL.md da habilidade e siga suas instruções para realizar o prompt de teste você mesmo. Faça-os um de cada vez. Isso é menos rigoroso do que subagentes independentes (você escreveu a habilidade e também a está executando, então você tem todo o contexto), mas é uma verificação útil - e a etapa de revisão humana compensa. Pule as execuções de linha de base - apenas use a habilidade para completar a tarefa conforme solicitado.
 
-**Reviewing results**: If you can't open a browser (e.g., Claude.ai's VM has no display, or you're on a remote server), skip the browser reviewer entirely. Instead, present results directly in the conversation. For each test case, show the prompt and the output. If the output is a file the user needs to see (like a .docx or .xlsx), save it to the filesystem and tell them where it is so they can download and inspect it. Ask for feedback inline: "How does this look? Anything you'd change?"
+**Revisando resultados**: Se você não conseguir abrir um navegador (por exemplo, a VM do Claude.ai não tem tela, ou você está em um servidor remoto), pule o revisor do navegador completamente. Em vez disso, apresente os resultados diretamente na conversa. Para cada caso de teste, mostre o prompt e a saída. Se a saída for um arquivo que o usuário precisa ver (como um .docx ou .xlsx), salve-o no sistema de arquivos e diga a ele onde está para que ele possa baixar e inspecionar. Peça feedback em linha: "Como isso parece? Algo que você mudaria?"
 
-**Benchmarking**: Skip the quantitative benchmarking — it relies on baseline comparisons which aren't meaningful without subagents. Focus on qualitative feedback from the user.
+**Benchmarking**: Pule o benchmarking quantitativo - ele depende de comparações de linha de base que não são significativas sem subagentes. Concentre-se no feedback qualitativo do usuário.
 
-**The iteration loop**: Same as before — improve the skill, rerun the test cases, ask for feedback — just without the browser reviewer in the middle. You can still organize results into iteration directories on the filesystem if you have one.
+**O loop de iteração**: O mesmo de antes - melhore a habilidade, execute novamente os casos de teste, peça feedback - apenas sem o revisor do navegador no meio. Você ainda pode organizar os resultados em diretórios de iteração no sistema de arquivos, se tiver um.
 
-**Description optimization**: This section requires the `claude` CLI tool (specifically `claude -p`) which is only available in Claude Code. Skip it if you're on Claude.ai.
+**Otimização da descrição**: Esta seção requer a ferramenta CLI `claude` (especificamente `claude -p`), que está disponível apenas no Claude Code. Pule-a se você estiver no Claude.ai.
 
-**Blind comparison**: Requires subagents. Skip it.
+**Comparação cega**: Requer subagentes. Pule-a.
 
-**Packaging**: The `package_skill.py` script works anywhere with Python and a filesystem. On Claude.ai, you can run it and the user can download the resulting `.skill` file.
+**Empacotamento**: O script `package_skill.py` funciona em qualquer lugar com Python e um sistema de arquivos. No Claude.ai, você pode executá-lo e o usuário pode baixar o arquivo `.skill` resultante.
 
-**Updating an existing skill**: The user might be asking you to update an existing skill, not create a new one. In this case:
-- **Preserve the original name.** Note the skill's directory name and `name` frontmatter field -- use them unchanged. E.g., if the installed skill is `research-helper`, output `research-helper.skill` (not `research-helper-v2`).
-- **Copy to a writeable location before editing.** The installed skill path may be read-only. Copy to `/tmp/skill-name/`, edit there, and package from the copy.
-- **If packaging manually, stage in `/tmp/` first**, then copy to the output directory -- direct writes may fail due to permissions.
-
----
-
-## Cowork-Specific Instructions
-
-If you're in Cowork, the main things to know are:
-
-- You have subagents, so the main workflow (spawn test cases in parallel, run baselines, grade, etc.) all works. (However, if you run into severe problems with timeouts, it's OK to run the test prompts in series rather than parallel.)
-- You don't have a browser or display, so when generating the eval viewer, use `--static <output_path>` to write a standalone HTML file instead of starting a server. Then proffer a link that the user can click to open the HTML in their browser.
-- For whatever reason, the Cowork setup seems to disincline Claude from generating the eval viewer after running the tests, so just to reiterate: whether you're in Cowork or in Claude Code, after running tests, you should always generate the eval viewer for the human to look at examples before revising the skill yourself and trying to make corrections, using `generate_review.py` (not writing your own boutique html code). Sorry in advance but I'm gonna go all caps here: GENERATE THE EVAL VIEWER *BEFORE* evaluating inputs yourself. You want to get them in front of the human ASAP!
-- Feedback works differently: since there's no running server, the viewer's "Submit All Reviews" button will download `feedback.json` as a file. You can then read it from there (you may have to request access first).
-- Packaging works — `package_skill.py` just needs Python and a filesystem.
-- Description optimization (`run_loop.py` / `run_eval.py`) should work in Cowork just fine since it uses `claude -p` via subprocess, not a browser, but please save it until you've fully finished making the skill and the user agrees it's in good shape.
-- **Updating an existing skill**: The user might be asking you to update an existing skill, not create a new one. Follow the update guidance in the claude.ai section above.
+**Atualizando uma habilidade existente**: O usuário pode estar pedindo para você atualizar uma habilidade existente, não criar uma nova. Neste caso:
+-   **Preserve o nome original.** Observe o nome do diretório da habilidade e o campo `name` do frontmatter - use-os inalterados. Por exemplo, se a habilidade instalada for `research-helper`, a saída será `research-helper.skill` (não `research-helper-v2`).
+-   **Copie para um local gravável antes de editar.** O caminho da habilidade instalada pode ser somente leitura. Copie para `/tmp/nome-da-habilidade/`, edite lá e empacote a partir da cópia.
+-   **Se estiver empacotando manualmente, prepare em `/tmp/` primeiro**, e depois copie para o diretório de saída - gravações diretas podem falhar devido a permissões.
 
 ---
 
-## Reference files
+## Instruções específicas para Cowork
 
-The agents/ directory contains instructions for specialized subagents. Read them when you need to spawn the relevant subagent.
+Se você estiver no Cowork, as principais coisas a saber são:
 
-- `agents/grader.md` — How to evaluate assertions against outputs
-- `agents/comparator.md` — How to do blind A/B comparison between two outputs
-- `agents/analyzer.md` — How to analyze why one version beat another
-
-The references/ directory has additional documentation:
-- `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
+-   Você tem subagentes, então o fluxo de trabalho principal (iniciar casos de teste em paralelo, executar linhas de base, classificar, etc.) funciona. (No entanto, se você encontrar problemas graves com timeouts, é OK executar os prompts de teste em série em vez de em paralelo.)
+-   Você não tem um navegador ou tela, então ao gerar o visualizador de avaliação, use `--static <output_path>` para escrever um arquivo HTML autônomo em vez de iniciar um servidor. Em seguida, ofereça um link que o usuário possa clicar para abrir o HTML em seu navegador.
+-   Por algum motivo, a configuração do Cowork parece desincentivar o Claude a gerar o visualizador de avaliação depois de executar os testes, então, apenas para reiterar: esteja você no Cowork ou no Claude Code, depois de executar os testes, você deve sempre gerar o visualizador de avaliação para o humano examinar os exemplos antes de revisar a habilidade você mesmo e tentar fazer correções, usando `generate_review.py` (não escrevendo seu próprio código HTML). Desculpe antecipadamente, mas vou usar letras maiúsculas aqui: GERE O VISUALIZADOR DE AVALIAÇÃO *ANTES* de avaliar as entradas você mesmo. Você quer colocá-los na frente do humano o mais rápido possível!
+-   O feedback funciona de forma diferente: como não há servidor em execução, o botão "Enviar Todas as Avaliações" do visualizador fará o download de `feedback.json` como um arquivo. Você poderá então lê-lo de lá (pode ser necessário solicitar acesso primeiro).
+-   O empacotamento funciona - `package_skill.py` só precisa de Python e um sistema de arquivos.
+-   A otimização da descrição (`run_loop.py` / `run_eval.py`) deve funcionar bem no Cowork, pois usa `claude -p` via subprocesso, não um navegador, mas guarde-a até que você tenha terminado completamente de fazer a habilidade e o usuário concorde que ela está em boas condições.
+-   **Atualizando uma habilidade existente**: O usuário pode estar pedindo para você atualizar uma habilidade existente, não criar uma nova. Siga as orientações de atualização na seção `claude.ai` acima.
 
 ---
 
-Repeating one more time the core loop here for emphasis:
+## Arquivos de referência
 
-- Figure out what the skill is about
-- Draft or edit the skill
-- Run claude-with-access-to-the-skill on test prompts
-- With the user, evaluate the outputs:
-  - Create benchmark.json and run `eval-viewer/generate_review.py` to help the user review them
-  - Run quantitative evals
-- Repeat until you and the user are satisfied
-- Package the final skill and return it to the user.
+O diretório `agents/` contém instruções para subagentes especializados. Leia-os quando precisar iniciar o subagente relevante.
 
-Please add steps to your TodoList, if you have such a thing, to make sure you don't forget. If you're in Cowork, please specifically put "Create evals JSON and run `eval-viewer/generate_review.py` so human can review test cases" in your TodoList to make sure it happens.
+-   `agents/grader.md` - Como avaliar asserções em relação às saídas
+-   `agents/comparator.md` - Como fazer comparação cega A/B entre duas saídas
+-   `agents/analyzer.md` - Como analisar por que uma versão venceu a outra
 
-Good luck!
+O diretório `references/` contém documentação adicional:
+-   `references/schemas.md` - Estruturas JSON para `evals.json`, `grading.json`, etc.
+
+---
+
+Repetindo mais uma vez o loop principal aqui para ênfase:
+
+-   Descubra do que se trata a habilidade
+-   Rascunhe ou edite a habilidade
+-   Execute o Claude com acesso à habilidade em prompts de teste
+-   Com o usuário, avalie as saídas:
+    -   Crie `benchmark.json` e execute `eval-viewer/generate_review.py` para ajudar o usuário a revisá-los
+    -   Execute avaliações quantitativas
+-   Repita até que você e o usuário estejam satisfeitos
+-   Empacote a habilidade final e retorne-a ao usuário. 
+
+Por favor, adicione etapas à sua lista de tarefas, se você tiver uma, para garantir que não se esqueça. Se você estiver no Cowork, por favor, coloque especificamente "Criar JSON de avaliações e executar `eval-viewer/generate_review.py` para que o humano possa revisar os casos de teste" em sua lista de tarefas para garantir que isso aconteça.
+
+Boa sorte!
