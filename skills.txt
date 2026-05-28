@@ -1,0 +1,42 @@
+Minhas Habilidades e Ferramentas:
+
+Habilidades:
+- update-config: Configurar o Claude Code harness via settings.json.
+- keybindings-help: Personalizar atalhos de teclado e keybindings.
+- verify: Verificar mudanças no código, rodando a aplicação e observando o comportamento.
+- code-review: Revisar código para qualidade, reuso e eficiência.
+- fewer-permission-prompts: Otimizar permissões para reduzir prompts.
+- loop: Executar um prompt ou comando slash em intervalos recorrentes.
+- claude-api: Construir, depurar e otimizar aplicativos Claude API / Anthropic SDK.
+- run: Lançar e executar o aplicativo do projeto para ver as mudanças funcionando.
+- init: Inicializar um novo arquivo CLAUDE.md com documentação do código.
+- review: Realizar code review de um pull request.
+- security-review: Realizar uma revisão de segurança das alterações pendentes.
+
+Ferramentas Disponíveis:
+- Agent: Lançar novos agentes para tarefas complexas e multi-etapas.
+- AskUserQuestion: Fazer perguntas ao usuário durante a execução.
+- Bash: Executar comandos shell.
+- CronCreate: Agendar prompts para execução futura.
+- CronDelete: Cancelar um cron job agendado.
+- CronList: Listar todos os cron jobs agendados.
+- Edit: Realizar substituições exatas de strings em arquivos.
+- EnterPlanMode: Entrar no modo de planejamento para tarefas de implementação não triviais.
+- EnterWorktree: Criar e entrar em um git worktree isolado.
+- ExitPlanMode: Sair do modo de planejamento após a conclusão do plano.
+- ExitWorktree: Sair de uma sessão de worktree.
+- Monitor: Iniciar um monitor de background que transmite eventos de um script de longa duração.
+- NotebookEdit: Substituir completamente o conteúdo de uma célula específica em um notebook Jupyter.
+- PushNotification: Enviar uma notificação desktop ao usuário.
+- Read: Ler um arquivo do sistema de arquivos local.
+- ScheduleWakeup: Agendar a retomada do trabalho no modo /loop dinâmico.
+- Skill: Executar uma habilidade especializada.
+- TaskCreate: Criar uma lista de tarefas estruturada.
+- TaskGet: Recuperar uma tarefa pelo seu ID.
+- TaskList: Listar todas as tarefas na lista.
+- TaskOutput: Recuperar a saída de uma tarefa em execução ou concluída.
+- TaskStop: Parar uma tarefa de background em execução.
+- TaskUpdate: Atualizar uma tarefa na lista.
+- WebFetch: Buscar conteúdo de uma URL e processá-lo com um modelo de IA.
+- WebSearch: Pesquisar na web e usar os resultados para informar as respostas.
+- Write: Escrever um arquivo no sistema de arquivos local.
